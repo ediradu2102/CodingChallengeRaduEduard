@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Earthquake Data</title>
+<style>
+    body {
+        background-image: url('https://htmlcolorcodes.com/assets/images/colors/baby-blue-color-solid-background-1920x1080.png');
+        background-size: cover;
+        background-repeat: no-repeat;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        flex-direction: column;
+    }
+</style>
+</head>
+<body>
+    <div id="earthquakeList"></div>
+    <button id="backButton">Back</button>
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const earthquakeList = document.getElementById("earthquakeList");
+        const backButton = document.getElementById("backButton");
+
+        const pathSegments = window.location.pathname.split("/");
+        const country = pathSegments[2];
+        const pastDays = pathSegments[3];
+
+        fetchAndDisplayEarthquakeData();
+
+        function fetchAndDisplayEarthquakeData() {
+
+            fetch(`/earthquakes/byCountry?country=${country}&pastDays=${pastDays}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (Array.isArray(data) && data.length > 0) {
+                        displayEarthquakes(data);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching earthquake data:", error);
+                    earthquakeList.innerHTML = "An error occurred while fetching earthquake data.";
+                });
+        }
+
+        function displayEarthquakes(earthquakes) {
+            const ul = document.createElement("ul");
+            earthquakes.forEach(earthquakeInfo => {
+                const li = document.createElement("li");
+                li.textContent = earthquakeInfo;
+                ul.appendChild(li);
+            });
+
+            earthquakeList.innerHTML = "";
+            earthquakeList.appendChild(ul);
+        }
+    });
+
+    backButton.addEventListener("click", function () {
+        // Redirect the user back to the first page
+        window.location.href = "/home";
+    });
+</script>
+</body>
+</html>

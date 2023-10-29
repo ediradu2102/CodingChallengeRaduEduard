@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Earthquake Data Fetcher</title>
+  <style>
+    body {
+        background-image: url('https://htmlcolorcodes.com/assets/images/colors/baby-blue-color-solid-background-1920x1080.png');
+        background-size: cover;
+        background-repeat: no-repeat;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        flex-direction: column;
+    }
+    .container {
+        text-align: center;
+        margin-top: -80px;
+    }
+    .form-container {
+        margin-top: 20px;
+    }
+    .form-container label {
+        margin-right: 10px;
+    }
+    .form-container input[type="number"] {
+        margin-right: 10px;
+    }
+    .form-container button[type="submit"] {
+        margin-left: 70px;
+    }
+    .container h1 {
+        margin-left: 30px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Earthquake Data Fetcher</h1>
+  <div class="form-container">
+    <form id="earthquakeForm">
+      <label for="country">Country:</label>
+      <input type="text" id="country" required>
+      <br>
+      <label for="pastDays">Past Days:</label>
+      <input type="number" id="pastDays" required>
+      <br>
+      <button type="submit">Fetch Earthquakes</button>
+    </form>
+  </div>
+  <div id="earthquakeList"></div>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("earthquakeForm");
+        const countryInput = document.getElementById("country");
+        const pastDaysInput = document.getElementById("pastDays");
+        const earthquakeList = document.getElementById("earthquakeList");
+
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            const country = countryInput.value;
+            const pastDays = pastDaysInput.value;
+
+            if (pastDays < 0) {
+                earthquakeList.innerHTML = "<br>Past days should be a positive number.";
+                return;
+            }
+
+            fetch(`/earthquakes/byCountry?country=${country}&pastDays=${pastDays}`)
+                .then(response => {
+                    if (response.status === 400) {
+                        // Handle 400 Bad Request status
+                        earthquakeList.innerHTML = `<br>Invalid country: ${country}`;
+                        throw new Error("Bad Request");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+    if (Array.isArray(data) && data.length > 0) {
+        fetch(`earthquakes/hasEarthquakes?country=${country}&pastDays=${pastDays}`)
+        .then(response => response.text()) // Convert the response to a text
+        .then(responseData => {
+            if (responseData.trim() === 'true') {
+                window.location.href = `/data/${country}/${pastDays}`;
+            } else if (responseData.trim() === 'false') {
+                displayEarthquakes(data);
+            } else {
+                earthquakeList.innerHTML = `An error occurred, while fetching the earthquake data`;
+            }
+        })
+        .catch(error => {
+            earthquakeList.innerHTML = `An error occurred, while fetching the earthquake data`;
+        });
+    } else {
+        earthquakeList.innerHTML = "No earthquakes found for the specified country in the past days.";
+    }
+})
+    });
+        function displayEarthquakes(earthquakes) {
+            const ul = document.createElement("ul");
+            earthquakes.forEach(earthquakeInfo => {
+                const li = document.createElement("li");
+                li.textContent = earthquakeInfo;
+                ul.appendChild(li);
+            });
+            earthquakeList.innerHTML = "";
+            earthquakeList.appendChild(ul);
+        }
+    });
+</script>
+</body>
+</html>
