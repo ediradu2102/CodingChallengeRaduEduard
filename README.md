@@ -15,4 +15,4 @@ then going to Query Params and entering: country and pastdays as keys and Tukey 
 
 If you are looking for countries with a lot of earthquakes try Canada or Brazil :) 
 
-For example Canada in the past 2 days, however, the information updates from day to day.
+For example Canada in the past 5 days, however, the information updates from day to day.
